@@ -20,3 +20,4 @@ try:
 except TypeError: invalido = 1, print(f"Valor inválido na posição {posicao}.")
 except ValueError: invalido = 1, print(f"Valor inválido na posição {posicao}.")
 if invalido: print("Portanto essa expressão não é válida.")
+# testes
