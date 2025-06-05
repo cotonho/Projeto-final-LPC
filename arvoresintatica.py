@@ -1,36 +1,99 @@
 import re
-
-def monta_arvore(expressao):
-
-    E = {
-        "I" : [],
-        "O" : [],
-        "E" : []
-        
-        
-    }
+class E():
     
-    IOE = {
-        "I" : [],
-        "O" : [],
-        "E" :[]
-    }
-    I = {
-        "I" :[]
-    }
+    def __init__(self):
+        self.I = None
+        self.O = None
+        self.E = None
+    def imprimir(self):
+        
+        if isinstance(self.I, E) and self.E is None:
+            return f"I: {self.I.imprimir()}, O: {self.O}, E: None"
+        elif isinstance(self.I, E) and self.E is not None:
+            return f"I: {self.I.imprimir()}, O: {self.O}, E: {self.E.imprimir()}"
+        elif self.E is not None:
+            return f"I: {self.I}, O: {self.O}, E: {self.E.imprimir()}"
+      
+        
+        
+        return f"I: {self.I}, O: {self.O}, E: {self.E}"
+    
 
-    O = {
-        "O" : []
-    }
+def monta_arvore(expressao ,  E_instance ):
+    
+   
+     
+    
+    
+    
+    index = 0
 
-    for index , elemento  in  enumerate(expressao):
-        if elemento.isdigit() and len(elemento) == 1 and index == 0:
-            E["E"].append(elemento)
+    while index < len(expressao):
+        print(index)
+        elemento = expressao[index]
+        if elemento.isdigit() and len(elemento) == 1 and E_instance.I is None:
+            E_instance.I = elemento
             
-        elif elemento in "+-*/":
-            E["E"].append(elemento)
+            
+        
+            
+        elif elemento in "+-*/" and  E_instance.O is None:
+            E_instance.O = elemento
+            
         elif elemento == "(":
-            E["E"].append(elemento)
+            expre_parents = ""
+            
+            while index < len(expressao) and expressao[index] != ")":
+                expre_parents += expressao[index]
+                index += 1
+                print(index)
+            
+            expre_parents = expre_parents.replace(" ", "")  
+            partes = expre_parents[1:]
+            partes = list(filter(None, partes))
+                  
+            
+            
+            E_instance.I = E()
+            monta_arvore(partes , E_instance.I)
+            
+        
+        
+            
+            
+            
+     
+            
+            
+       
+            
+        
+        
+        if E_instance.E is not None:
+            E_profundo  =  verifica_E(E_instance)
+            monta_arvore(expressao[index +1:] , E_profundo)
+            return
+            E_instance.E.I = elemento
+        
+        elif E_instance.E is None:
+            E_instance.E  =  E()
+        
+        index += 1       
+            
+    
+            
+             
+def verifica_E(objeto):
+    if objeto.I is None and objeto.O is None:
+        return objeto
+    else:
+        return verifica_E(objeto.E)       
+            
+        
+            
+           
+            
+            
             
          
             
@@ -74,7 +137,7 @@ partes = re.split(r'([(+\-*/)])', expressao)
 # remove espaçõs vazios de partes
 partes = list(filter(None, partes))
 
-print(partes)
+
 
 
 
@@ -103,12 +166,15 @@ try: # esse código ainda passa as verificações em operações como 1++
 except TypeError: invalido = 1, print(f"Valor inválido na posição")
 except ValueError: invalido = 1, print(f"Valor inválido na posição")
 
-print(f"O: {Os_Necessarios}, E: {Es_Necessarios}")
+#print(f"O: {Os_Necessarios}, E: {Es_Necessarios}")
 
 IOEs, Is = Expressoes_Necessarias(Os_Necessarios, Es_Necessarios)
-print(f"IOEs: {IOEs}, Is: {Is}")
+#print(f"IOEs: {IOEs}, Is: {Is}")
 
 if invalido: print("Portanto essa expressão não é válida.")
-else:print('passou')
+else:print('')
 
-monta_arvore(partes)
+E_instance = E()
+monta_arvore(partes, E_instance)
+
+print(E_instance.imprimir())
