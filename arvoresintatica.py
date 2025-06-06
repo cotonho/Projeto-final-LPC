@@ -1,4 +1,5 @@
 import re
+
 class E():
     
     def __init__(self):
@@ -13,95 +14,55 @@ class E():
             return f"I: {self.I.imprimir()}, O: {self.O}, E: {self.E.imprimir()}"
         elif self.E is not None:
             return f"I: {self.I}, O: {self.O}, E: {self.E.imprimir()}"
-      
-        
         
         return f"I: {self.I}, O: {self.O}, E: {self.E}"
-    
 
 def monta_arvore(expressao ,  E_instance ):
-    
-   
-     
-    
-    
-    
     index = 0
-
     while index < len(expressao):
-        print(index)
         elemento = expressao[index]
-        if elemento.isdigit() and len(elemento) == 1 and E_instance.I is None:
+
+        #agora verifica se é número, inteiro ou decimal
+        if re.fullmatch(r'\d+(\.\d+)?', elemento) and E_instance.I is None:
             E_instance.I = elemento
-            
-            
-        
-            
+
         elif elemento in "+-*/" and  E_instance.O is None:
             E_instance.O = elemento
-            
+
         elif elemento == "(":
             expre_parents = ""
-            
-            while index < len(expressao) and expressao[index] != ")":
-                expre_parents += expressao[index]
+            index += 1  # Pular o '('
+            parenteses_abertos = 1
+            while index < len(expressao) and parenteses_abertos > 0:
+                if expressao[index] == '(':
+                    parenteses_abertos += 1
+                elif expressao[index] == ')':
+                    parenteses_abertos -= 1
+                if parenteses_abertos > 0:
+                    expre_parents += expressao[index]
                 index += 1
-                print(index)
-            
-            expre_parents = expre_parents.replace(" ", "")  
-            partes = expre_parents[1:]
-            partes = list(filter(None, partes))
-                  
-            
-            
+
+            expre_parents = expre_parents.replace(" ", "")
+            partes = re.findall(r'\d+\.\d+|\d+|[()+\-*/]', expre_parents)
             E_instance.I = E()
             monta_arvore(partes , E_instance.I)
-            
-        
-        
-            
-            
-            
-     
-            
-            
-       
-            
-        
-        
+            continue  # evitar index++ extra
+
         if E_instance.E is not None:
-            E_profundo  =  verifica_E(E_instance)
+            E_profundo = verifica_E(E_instance)
             monta_arvore(expressao[index +1:] , E_profundo)
             return
-            E_instance.E.I = elemento
-        
+
         elif E_instance.E is None:
             E_instance.E  =  E()
-        
+
         index += 1       
-            
-    
-            
-             
+
 def verifica_E(objeto):
     if objeto.I is None and objeto.O is None:
         return objeto
     else:
         return verifica_E(objeto.E)       
-            
-        
-            
-           
-            
-            
-            
-         
-            
-
-
-
-
-
 
 def Expressoes_Necessarias (Os_Necessarios, Es_Necessarios):
     IOEs = 0
@@ -109,10 +70,9 @@ def Expressoes_Necessarias (Os_Necessarios, Es_Necessarios):
 
     while Os_Necessarios > 0 or Es_Necessarios > 0:
         if Os_Necessarios >= 1 and Es_Necessarios >= 1:
-                    IOEs += 1
-                    Os_Necessarios -= 1
-                    Es_Necessarios -= 1
-
+            IOEs += 1
+            Os_Necessarios -= 1
+            Es_Necessarios -= 1
         elif Es_Necessarios == 1 and Os_Necessarios == 0:
             Is = 1
             Es_Necessarios -= 1
@@ -127,24 +87,17 @@ Es_Necessarios = 0
 parenteses = 0
 expressao = input("Digite uma expressão: ")
 expressao = expressao.replace(" ", "") 
-  
+
 operadores = "()+-*/"
 
-# Caracteres que serão utilizados para separar a expressão
-partes = re.split(r'([(+\-*/)])', expressao)
+#Separar números decimais 
+partes = re.findall(r'\d+\.\d+|\d+|[()+\-*/]', expressao)
 
-
-# remove espaçõs vazios de partes
+# remove espaços vazios de partes
 partes = list(filter(None, partes))
 
-
-
-
-
-
-try: # esse código ainda passa as verificações em operações como 1++
+try:  # esse código ainda passa as verificações em operações como 1++
     for atual in partes:
-
         if atual in operadores:
             if atual == '(':
                 parenteses += 1
@@ -155,24 +108,24 @@ try: # esse código ainda passa as verificações em operações como 1++
 
         elif (float(atual).is_integer()):
             Es_Necessarios += 1
-
             decimal = int(atual)
         else:
             decimal = float(atual)
             Es_Necessarios += 1
-        
 
-    # verifica se os valores são válidos
-except TypeError: invalido = 1, print(f"Valor inválido na posição")
-except ValueError: invalido = 1, print(f"Valor inválido na posição")
-
-#print(f"O: {Os_Necessarios}, E: {Es_Necessarios}")
+except TypeError: 
+    invalido = 1
+    print(f"Valor inválido na posição")
+except ValueError: 
+    invalido = 1
+    print(f"Valor inválido na posição")
 
 IOEs, Is = Expressoes_Necessarias(Os_Necessarios, Es_Necessarios)
-#print(f"IOEs: {IOEs}, Is: {Is}")
 
-if invalido: print("Portanto essa expressão não é válida.")
-else:print('')
+if invalido: 
+    print("Portanto essa expressão não é válida.")
+else:
+    print('')
 
 E_instance = E()
 monta_arvore(partes, E_instance)
