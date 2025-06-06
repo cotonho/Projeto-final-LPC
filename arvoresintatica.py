@@ -1,10 +1,22 @@
 import re
 
+class D():
+    def __init__(self):
+        self.value = None
+
+class N():
+    def __init__(self):
+        self.D = D()
+
+class I():
+
+    def __init__(self):
+        self.N = N()
 
 class E():
 
     def __init__(self):
-        self.I = None
+        self.I = I()
         self.O = None
         self.E = None
 
@@ -21,12 +33,12 @@ class E():
 
     def imprimir(self):
 
-        partes = []
+        partes = ["E:"]
         if hasattr(self, 'I'):
             if isinstance(self.I, E):
-                partes.append(f"I: {self.I.imprimir()}")
+                partes.append(f"I: N: D: {self.I.N.D.value.imprimir()}")
             else:
-                partes.append(f"I: {self.I}")
+                partes.append(f"I: N: D: {self.I.N.D.value}")
         if hasattr(self, 'O'):
             partes.append(f"O: {self.O}")
         if hasattr(self, 'E'):
@@ -43,8 +55,10 @@ def monta_arvore(expressao, E_instance):
     while index < len(expressao):
         print(index)
         elemento = expressao[index]
-        if elemento.isdigit() and len(elemento) == 1 and E_instance.I is None:
-            E_instance.I = elemento
+        if elemento.isdigit() and len(elemento) == 1 and isinstance(E_instance.I, I):
+            E_instance.I.N.D.value = elemento
+
+
 
 
 
@@ -52,13 +66,13 @@ def monta_arvore(expressao, E_instance):
         elif elemento in "+-*/" and E_instance.O is None:
             E_instance.O = elemento
 
+
         elif elemento == "(":
             expre_parents = ""
 
             while index < len(expressao) and expressao[index] != ")":
                 expre_parents += expressao[index]
                 index += 1
-                print(index)
 
             expre_parents = expre_parents.replace(" ", "")
             partes = expre_parents[1:]
@@ -80,12 +94,17 @@ def monta_arvore(expressao, E_instance):
 
         index += 1
 
-
 def verifica_E(objeto):
-    if objeto.I is None and objeto.O is None:
-        return objeto
-    else:
-        return verifica_E(objeto.E)
+    try:
+        if isinstance(objeto.I, I):
+            if objeto.I.N.D.value is None and objeto.O is None:
+                return objeto
+        elif objeto.I is None and objeto.O is None:
+            return objeto
+    except AttributeError:
+        return objeto  # Caso a estrutura esteja incompleta
+
+    return verifica_E(objeto.E)
 
 
 def Expressoes_Necessarias(Os_Necessarios, Es_Necessarios):
@@ -133,7 +152,7 @@ try:  # esse código ainda passa as verificações em operações como 1++
             else:
                 Os_Necessarios += 1
 
-        elif (float(atual).is_integer()):
+        elif float(atual).is_integer():
             Es_Necessarios += 1
 
             decimal = int(atual)
@@ -149,7 +168,7 @@ except ValueError:
 
 # print(f"O: {Os_Necessarios}, E: {Es_Necessarios}")
 
-IOEs, Is = Expressoes_Necessarias(Os_Necessarios, Es_Necessarios)
+# IOEs, Is = Expressoes_Necessarias(Os_Necessarios, Es_Necessarios)
 # print(f"IOEs: {IOEs}, Is: {Is}")
 
 if invalido:
