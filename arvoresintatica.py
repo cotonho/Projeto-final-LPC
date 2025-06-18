@@ -1,5 +1,6 @@
 import re
 
+
 # Separa os elementos da expressão e classifica cada um
 def gerar_tabela_tokens(expressao):
     padrao = r'\d+\.\d+|\d+|[()+\-*/]'  # Padrão para separar os tokens
@@ -23,19 +24,21 @@ def gerar_tabela_tokens(expressao):
 
     return tokens, tabela
 
+
 # Exibe os tokens que foram identificados
 def imprimir_tabela(tabela):
     print("\nTokens identificados:")
     for token, tipo in tabela:
         print(f"{token} → {tipo}")
 
-# Imprime a derivação da expressão seguindo a gramática 
+
+# Imprime a derivação da expressão seguindo a gramática
 def imprimir_derivacao(tokens):
     def is_num(tok):
         return re.fullmatch(r'\d+\.\d+|\d+', tok)
 
     def derivar_E(tok_list, nivel=0, contador=0):
-        
+
         indent = "  " * nivel  # Faz a indentação da derivação
 
         if tok_list[0] == '(' and ')' in tok_list:
@@ -46,25 +49,24 @@ def imprimir_derivacao(tokens):
             tok_list.pop(0)  # Remove o ')'
             if len(tok_list) == 0: contador = 1
             derivar_E(listaparenteses, nivel, contador)
+            nivel+=1
             if len(tok_list) == 0: return
-
 
         if len(tok_list) == 1 and is_num(tok_list[0]):
             print(f"{indent}E → I")
             print(f"{indent}I → N")
-        
+
             if '.' in tok_list[0]:
                 print(f"{indent}N → D.D")
                 d1, d2 = tok_list[0].split('.')
                 print(f"{indent}D → {d1}")
                 print(f"{indent}D → {d2}")
-        
+
             else:
                 print(f"{indent}N → D")
                 print(f"{indent}D → {tok_list[0]}")
-        
+
         elif tok_list[0] in "+-*/":
-            nivel -= 1
             indent = "  " * nivel
             print(f"{indent}O → {tok_list[0]}")
             derivar_E(tok_list[1:], nivel)
@@ -82,17 +84,19 @@ def imprimir_derivacao(tokens):
                         contador += 1
             if contador > 3 or contador == 0:
                 print(f"{indent}E → I O E")
+                nivel += 1
+                indent = "  " * nivel
             else:
                 print(f"{indent}E → I")
             print(f"{indent}I → N")
 
             if '(' == tok_list[0]:
                 print(f"{indent}N → ( E )")
-                
-                print(f"{indent}E → I O E")
+
                 nivel += 1
-                indent = "  " * nivel 
-                
+                indent = "  " * nivel
+                print(f"{indent}E → I O E")
+
                 print(f"{indent}I → N")
                 tok_list.pop(0)  # Remove o '('
 
@@ -101,18 +105,17 @@ def imprimir_derivacao(tokens):
                 d1, d2 = tok_list[0].split('.')
                 print(f"{indent}D → {d1}")
                 print(f"{indent}D → {d2}")
-        
+
             else:
                 print(f"{indent}N → D")
                 print(f"{indent}D → {tok_list[0]}")
             print(f"{indent}O → {tok_list[1]}")
-            derivar_E(tok_list[2:], nivel + 1)
+            derivar_E(tok_list[2:], nivel)
 
         else:
             print(f"{indent}Expressão inválida ou incompleta.")
 
     derivar_E(tokens)
-
 
 
 expressao = input("Digite uma expressão: ")
