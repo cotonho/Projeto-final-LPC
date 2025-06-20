@@ -3,7 +3,7 @@ import re
 
 # Separa os elementos da expressão e classifica cada um
 def gerar_tabela_tokens(expressao):
-    padrao = r'\d+\.\d+|\d+|[()+\-*/]'  # Padrão para separar os tokens
+    padrao = r'\d+\.\d+|\d+|[()]+|[+]+|[*]+|[-]+|[/]+|i'  # Padrão para separar os tokens
     tokens = re.findall(padrao, expressao)
     tabela = []
 
@@ -18,6 +18,8 @@ def gerar_tabela_tokens(expressao):
             tipo = "AbreParêntese"
         elif t == ')':
             tipo = "FechaParêntese"
+        elif t == 'i':
+            tipo = "Identificador"
         else:
             tipo = "Desconhecido"
         tabela.append((t, tipo))
@@ -36,6 +38,27 @@ def imprimir_tabela(tabela):
 def imprimir_derivacao(tokens):
     def is_num(tok):
         return re.fullmatch(r'\d+\.\d+|\d+', tok)
+    
+    def quantos_digitos(d1, indent):
+        if len(d1) == 1:
+            print(f"{indent}D → {d1}")
+                
+        elif len(d1) == 2:
+            print(f"{indent}D → DD")
+            print(f"{indent}D → {d1[0]}")
+            print(f"{indent}D → {d1[1]}")
+
+        elif len(d1) == 3:
+            print(f"{indent}D → DDD")
+            print(f"{indent}D → {d1[0]}")
+            print(f"{indent}D → {d1[1]}")
+            print(f"{indent}D → {d1[2]}")
+        
+        else:
+            print(f"{indent}D → DDD")
+            print(f"{indent}D → {d1[0]}")
+            print(f"{indent}D → {d1[1]}")
+            quantos_digitos(d1[2:],indent)
 
     def derivar_E(tok_list, nivel=0, contador=0):
 
@@ -52,19 +75,24 @@ def imprimir_derivacao(tokens):
             nivel+=1
             if len(tok_list) == 0: return
 
-        if len(tok_list) == 1 and is_num(tok_list[0]):
+        if len(tok_list) == 1 and tok_list[0] == 'i':
+            print(f"{indent}E → I")
+            print(f"{indent}I → i")
+
+        elif len(tok_list) == 1 and is_num(tok_list[0]):
             print(f"{indent}E → I")
             print(f"{indent}I → N")
 
             if '.' in tok_list[0]:
                 print(f"{indent}N → D.D")
                 d1, d2 = tok_list[0].split('.')
-                print(f"{indent}D → {d1}")
-                print(f"{indent}D → {d2}")
+                
+                quantos_digitos(d1, indent)
+                quantos_digitos(d2, indent)
 
             else:
                 print(f"{indent}N → D")
-                print(f"{indent}D → {tok_list[0]}")
+                quantos_digitos(tok_list[0], indent)
 
         elif tok_list[0] in "+-*/":
             indent = "  " * nivel
@@ -88,7 +116,11 @@ def imprimir_derivacao(tokens):
                 indent = "  " * nivel
             else:
                 print(f"{indent}E → I")
-            print(f"{indent}I → N")
+
+            if tok_list[0] == 'i':
+                print(f"{indent}I → i")
+            else:
+                print(f"{indent}I → N")
 
             if '(' == tok_list[0]:
                 print(f"{indent}N → ( E )")
@@ -103,12 +135,13 @@ def imprimir_derivacao(tokens):
             if '.' in tok_list[0]:
                 print(f"{indent}N → D.D")
                 d1, d2 = tok_list[0].split('.')
-                print(f"{indent}D → {d1}")
-                print(f"{indent}D → {d2}")
+                quantos_digitos(d1, indent)
+                quantos_digitos(d2, indent)
 
+                
             else:
                 print(f"{indent}N → D")
-                print(f"{indent}D → {tok_list[0]}")
+                quantos_digitos(tok_list[0], indent)
             print(f"{indent}O → {tok_list[1]}")
             derivar_E(tok_list[2:], nivel)
 
